@@ -157,18 +157,83 @@ class ProductDescriptionGeneratorTest extends TestCase
         $this->assertIsString($result);
     }
 
+    public function testFromOllamaCreatesInstanceWithCorrectDefaults(): void
+    {
+        $fakeClient = new ClientFake([
+            CreateResponse::fake([
+                'choices' => [
+                    [
+                        'message' => [
+                            'role' => 'assistant',
+                            'content' => 'Locally generated description.',
+                        ],
+                        'finish_reason' => 'stop',
+                        'index' => 0,
+                    ],
+                ],
+            ]),
+        ]);
+
+        $generator = ProductDescriptionGenerator::fromOllama();
+        $this->injectFakeClient($generator, $fakeClient);
+
+        $result = $generator->generate(['type' => 'monitor', 'size' => '27-inch']);
+
+        $fakeClient->chat()->assertSent(function (string $method, array $parameters): bool {
+            return $method === 'create'
+                && $parameters['model'] === 'lfm2';
+        });
+
+        $this->assertSame('Locally generated description.', $result);
+    }
+
+    public function testFromOllamaAcceptsCustomModelName(): void
+    {
+        $fakeClient = new ClientFake([
+            CreateResponse::fake([
+                'choices' => [
+                    [
+                        'message' => [
+                            'role' => 'assistant',
+                            'content' => 'Custom model description.',
+                        ],
+                        'finish_reason' => 'stop',
+                        'index' => 0,
+                    ],
+                ],
+            ]),
+        ]);
+
+        $generator = ProductDescriptionGenerator::fromOllama('llama3.2');
+        $this->injectFakeClient($generator, $fakeClient);
+
+        $generator->generate(['brand' => 'Acme']);
+
+        $fakeClient->chat()->assertSent(function (string $method, array $parameters): bool {
+            return $parameters['model'] === 'llama3.2';
+        });
+    }
+
+
     /**
      * Creates a ProductDescriptionGenerator and injects a fake OpenAI client via reflection.
      */
     private function createGeneratorWithFakeClient(ClientFake $fakeClient): ProductDescriptionGenerator
     {
         $generator = new ProductDescriptionGenerator('fake-api-key');
+        $this->injectFakeClient($generator, $fakeClient);
 
+        return $generator;
+    }
+
+    /**
+     * Injects a fake OpenAI client into an existing generator instance via reflection.
+     */
+    private function injectFakeClient(ProductDescriptionGenerator $generator, ClientFake $fakeClient): void
+    {
         $reflection = new \ReflectionClass($generator);
         $property = $reflection->getProperty('client');
         $property->setAccessible(true);
         $property->setValue($generator, $fakeClient);
-
-        return $generator;
     }
 }

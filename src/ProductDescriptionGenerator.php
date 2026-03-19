@@ -11,6 +11,8 @@ class ProductDescriptionGenerator
 {
     private const DEFAULT_MODEL = 'liquid/lfm-2';
     private const DEFAULT_BASE_URI = 'https://models.github.ai/inference';
+    private const OLLAMA_BASE_URI = 'http://localhost:11434/v1';
+    private const OLLAMA_DEFAULT_MODEL = 'lfm2';
 
     private ClientContract $client;
     private string $model;
@@ -25,6 +27,19 @@ class ProductDescriptionGenerator
             ->withApiKey($apiKey)
             ->withBaseUri($baseUri)
             ->make();
+    }
+
+    /**
+     * Create a generator configured to use a local Ollama instance.
+     *
+     * @param string $model   The Ollama model name (as shown by `ollama list`)
+     * @param string $baseUri The Ollama OpenAI-compatible endpoint
+     */
+    public static function fromOllama(
+        string $model = self::OLLAMA_DEFAULT_MODEL,
+        string $baseUri = self::OLLAMA_BASE_URI
+    ): static {
+        return new static('ollama', $model, $baseUri);
     }
 
     /**

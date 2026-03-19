@@ -65,6 +65,59 @@ $technicalInfo = [
 ];
 ```
 
+### Local Ollama
+
+No API token is needed for a local [Ollama](https://ollama.com) instance. Use the `fromOllama()` factory:
+
+```bash
+# pull the model once
+ollama pull lfm2
+```
+
+```php
+use Tandrezone\Description\ProductDescriptionGenerator;
+
+// default: model=lfm2, endpoint=http://localhost:11434/v1
+$generator = ProductDescriptionGenerator::fromOllama();
+
+// or choose a different model
+$generator = ProductDescriptionGenerator::fromOllama('llama3.2');
+
+$description = $generator->generate([
+    'brand'        => 'AudioMax',
+    'type'         => 'Over-ear headphones',
+    'battery_life' => '30 hours',
+    'connectivity' => ['Bluetooth 5.3', '3.5mm jack'],
+]);
+
+echo $description;
+```
+
+## Examples
+
+Ready-to-run scripts are in the [`examples/`](examples/) directory:
+
+| Script | Description |
+|--------|-------------|
+| [`examples/github-models.php`](examples/github-models.php) | Generate a description using GitHub Models (LFM-2). Requires `GITHUB_TOKEN` env var. |
+| [`examples/ollama.php`](examples/ollama.php) | Generate a description using local Ollama. Accepts an optional model name argument. |
+| [`examples/random-tech-info.php`](examples/random-tech-info.php) | Three products with arbitrary specs — demonstrates the flexible key-value input format. |
+
+```bash
+# GitHub Models
+export GITHUB_TOKEN=your_token_here
+php examples/github-models.php
+
+# Ollama (default model: lfm2)
+php examples/ollama.php
+
+# Ollama with a custom model
+php examples/ollama.php llama3.2
+
+# Random tech info showcase (uses Ollama)
+php examples/random-tech-info.php
+```
+
 ## Running tests
 
 ```bash

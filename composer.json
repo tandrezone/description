@@ -1,0 +1,25 @@
+{
+    "name": "tandrezone/description",
+    "description": "A PHP composer package that generates product descriptions from technical info using LFM-2 via GitHub Models API",
+    "keywords": ["product", "description", "llm", "lfm2", "ai", "generation"],
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.1",
+        "openai-php/client": "^0.10",
+        "guzzlehttp/guzzle": "^7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0 || ^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Tandrezone\\Description\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tandrezone\\Description\\Tests\\": "tests/"
+        }
+    }
+}

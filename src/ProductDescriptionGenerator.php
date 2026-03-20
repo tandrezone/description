@@ -64,24 +64,33 @@ class ProductDescriptionGenerator
      *
      * @param array<string, mixed> $technicalInfo Key-value pairs of technical product attributes
      * @return string The generated product description
+     * @throws \RuntimeException When the API request fails or returns no choices
      */
     public function generate(array $technicalInfo): string
     {
         $prompt = $this->buildPrompt($technicalInfo);
 
-        $response = $this->client->chat()->create([
-            'model' => $this->model,
-            'messages' => [
-                [
-                    'role' => 'system',
-                    'content' => 'You are a professional product copywriter. Generate clear, engaging, and accurate product descriptions based on technical specifications provided. The description should be suitable for an e-commerce website and highlight the key features and benefits.',
+        try {
+            $response = $this->client->chat()->create([
+                'model' => $this->model,
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => 'You are a professional product copywriter. Generate clear, engaging, and accurate product descriptions based on technical specifications provided. The description should be suitable for an e-commerce website and highlight the key features and benefits.',
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => $prompt,
+                    ],
                 ],
-                [
-                    'role' => 'user',
-                    'content' => $prompt,
-                ],
-            ],
-        ]);
+            ]);
+        } catch (\Throwable $e) {
+            throw new \RuntimeException('API request failed: ' . $e->getMessage(), 0, $e);
+        }
+
+        if (empty($response->choices)) {
+            throw new \RuntimeException('The API returned a response with no choices. The model may be unavailable or the request was rejected.');
+        }
 
         return trim($response->choices[0]->message->content ?? '');
     }

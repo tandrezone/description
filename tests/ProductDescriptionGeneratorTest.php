@@ -274,6 +274,47 @@ class ProductDescriptionGeneratorTest extends TestCase
         $this->assertSame('Custom OpenRouter model description.', $result);
     }
 
+    public function testGenerateThrowsRuntimeExceptionWhenClientThrows(): void
+    {
+        $fakeClient = new ClientFake([
+            new \Exception('Undefined array key "choices"'),
+        ]);
+
+        $generator = new ProductDescriptionGenerator('fake-api-key');
+        $this->injectFakeClient($generator, $fakeClient);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('API request failed:');
+
+        $generator->generate(['brand' => 'TestBrand']);
+    }
+
+    public function testGenerateThrowsRuntimeExceptionOnEmptyChoices(): void
+    {
+        $emptyChoicesResponse = CreateResponse::from([
+            'id' => 'test-id',
+            'object' => 'chat.completion',
+            'created' => 1_700_000_000,
+            'model' => 'liquid/lfm-2',
+            'choices' => [],
+            'usage' => [
+                'prompt_tokens' => 0,
+                'completion_tokens' => 0,
+                'total_tokens' => 0,
+            ],
+        ], CreateResponse::fakeResponseMetaInformation());
+
+        $fakeClient = new ClientFake([$emptyChoicesResponse]);
+
+        $generator = new ProductDescriptionGenerator('fake-api-key');
+        $this->injectFakeClient($generator, $fakeClient);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('no choices');
+
+        $generator->generate(['brand' => 'TestBrand']);
+    }
+
     /**
      * Creates a ProductDescriptionGenerator and injects a fake OpenAI client via reflection.
      */

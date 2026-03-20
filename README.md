@@ -93,6 +93,32 @@ $description = $generator->generate([
 echo $description;
 ```
 
+### OpenRouter.ai
+
+[OpenRouter](https://openrouter.ai) provides access to hundreds of LLMs — including free-tier models — through a single OpenAI-compatible API. Use the `fromOpenRouter()` factory:
+
+```php
+use Tandrezone\Description\ProductDescriptionGenerator;
+
+// default model: liquid/lfm-2
+$generator = ProductDescriptionGenerator::fromOpenRouter(getenv('OPENROUTER_API_KEY'));
+
+// or choose any model from https://openrouter.ai/models
+$generator = ProductDescriptionGenerator::fromOpenRouter(
+    getenv('OPENROUTER_API_KEY'),
+    'mistralai/mistral-7b-instruct'
+);
+
+$description = $generator->generate([
+    'brand'        => 'TechBrand',
+    'cpu'          => 'Intel Core i7-1355U',
+    'ram'          => '16GB DDR5',
+    'battery_life' => 'Up to 12 hours',
+]);
+
+echo $description;
+```
+
 ## Examples
 
 Ready-to-run scripts are in the [`examples/`](examples/) directory:
@@ -101,6 +127,7 @@ Ready-to-run scripts are in the [`examples/`](examples/) directory:
 |--------|-------------|
 | [`examples/github-models.php`](examples/github-models.php) | Generate a description using GitHub Models (LFM-2). Requires `GITHUB_TOKEN` env var. |
 | [`examples/ollama.php`](examples/ollama.php) | Generate a description using local Ollama. Accepts an optional model name argument. |
+| [`examples/openrouter.php`](examples/openrouter.php) | Generate a description using OpenRouter.ai. Requires `OPENROUTER_API_KEY` env var. Accepts an optional model name argument. |
 | [`examples/random-tech-info.php`](examples/random-tech-info.php) | Three products with arbitrary specs — demonstrates the flexible key-value input format. |
 
 ```bash
@@ -113,6 +140,13 @@ php examples/ollama.php
 
 # Ollama with a custom model
 php examples/ollama.php llama3.2
+
+# OpenRouter.ai (default model: liquid/lfm-2)
+export OPENROUTER_API_KEY=sk-or-...
+php examples/openrouter.php
+
+# OpenRouter.ai with a custom model
+php examples/openrouter.php mistralai/mistral-7b-instruct
 
 # Random tech info showcase (uses Ollama)
 php examples/random-tech-info.php

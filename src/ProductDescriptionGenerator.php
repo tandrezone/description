@@ -13,6 +13,8 @@ class ProductDescriptionGenerator
     private const DEFAULT_BASE_URI = 'https://models.github.ai/inference';
     private const OLLAMA_BASE_URI = 'http://localhost:11434/v1';
     private const OLLAMA_DEFAULT_MODEL = 'lfm2';
+    private const OPENROUTER_BASE_URI = 'https://openrouter.ai/api/v1';
+    private const OPENROUTER_DEFAULT_MODEL = 'liquid/lfm-2';
 
     private ClientContract $client;
     private string $model;
@@ -40,6 +42,21 @@ class ProductDescriptionGenerator
         string $baseUri = self::OLLAMA_BASE_URI
     ): static {
         return new static('ollama', $model, $baseUri);
+    }
+
+    /**
+     * Create a generator configured to use OpenRouter.ai.
+     *
+     * @param string $apiKey  Your OpenRouter API key (https://openrouter.ai/keys)
+     * @param string $model   The OpenRouter model ID (see https://openrouter.ai/models)
+     * @param string $baseUri The OpenRouter API endpoint
+     */
+    public static function fromOpenRouter(
+        string $apiKey,
+        string $model = self::OPENROUTER_DEFAULT_MODEL,
+        string $baseUri = self::OPENROUTER_BASE_URI
+    ): static {
+        return new static($apiKey, $model, $baseUri);
     }
 
     /**

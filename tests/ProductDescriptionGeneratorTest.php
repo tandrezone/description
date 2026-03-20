@@ -215,6 +215,65 @@ class ProductDescriptionGeneratorTest extends TestCase
     }
 
 
+    public function testFromOpenRouterUsesDefaultModel(): void
+    {
+        $fakeClient = new ClientFake([
+            CreateResponse::fake([
+                'choices' => [
+                    [
+                        'message' => [
+                            'role' => 'assistant',
+                            'content' => 'OpenRouter generated description.',
+                        ],
+                        'finish_reason' => 'stop',
+                        'index' => 0,
+                    ],
+                ],
+            ]),
+        ]);
+
+        $generator = ProductDescriptionGenerator::fromOpenRouter('fake-openrouter-key');
+        $this->injectFakeClient($generator, $fakeClient);
+
+        $result = $generator->generate(['brand' => 'TechBrand', 'cpu' => 'Intel Core i7']);
+
+        $fakeClient->chat()->assertSent(function (string $method, array $parameters): bool {
+            return $method === 'create'
+                && $parameters['model'] === 'liquid/lfm-2';
+        });
+
+        $this->assertSame('OpenRouter generated description.', $result);
+    }
+
+    public function testFromOpenRouterAcceptsCustomModelName(): void
+    {
+        $fakeClient = new ClientFake([
+            CreateResponse::fake([
+                'choices' => [
+                    [
+                        'message' => [
+                            'role' => 'assistant',
+                            'content' => 'Custom OpenRouter model description.',
+                        ],
+                        'finish_reason' => 'stop',
+                        'index' => 0,
+                    ],
+                ],
+            ]),
+        ]);
+
+        $generator = ProductDescriptionGenerator::fromOpenRouter('fake-openrouter-key', 'mistralai/mistral-7b-instruct');
+        $this->injectFakeClient($generator, $fakeClient);
+
+        $result = $generator->generate(['color' => 'red']);
+
+        $fakeClient->chat()->assertSent(function (string $method, array $parameters): bool {
+            return $parameters['model'] === 'mistralai/mistral-7b-instruct';
+        });
+
+        $this->assertSame('Custom OpenRouter model description.', $result);
+    }
+
     /**
      * Creates a ProductDescriptionGenerator and injects a fake OpenAI client via reflection.
      */
